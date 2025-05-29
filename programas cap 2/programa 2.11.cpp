@@ -1,14 +1,14 @@
 #include<stdio.h>
-#include<math.h>
 
 int main(){
-
-float RES;
-int R, T, Q;
-printf("Ingrese los valores de R, T y Q: ");
-scanf("%i %i %i", &R, &T, &Q);
-RES = pow(R,4) - pow(T,3) * pow(Q,2);
-if (RES < 820)
-    printf("\nR = %i\t T = %i\t Q = %i", R, T, Q);
+int DIS, TIE;
+float BIL;
+printf("Ingrese la distancia entre las ciudades y el tiempo de estancia: ");
+scanf(" %i %i", &DIS, &TIE);
+if ((DIS*2>500) && (TIE>10))
+    BIL = DIS * 2 * 0.19 * 0.8;
+else
+    BIL = DIS * 2 * 0.19;
+printf("\n\nCosto del billete: %7.2f", BIL);
 return 0;
 }
