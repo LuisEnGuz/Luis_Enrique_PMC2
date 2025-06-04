@@ -15,7 +15,7 @@ int main()
         for(I=1; I<=N; I++) 
         {
             J = 11.0/I;
-            P = 1.0/I+1;
+            P = 1.0/(I+1);
             R *= (J/P);
             printf("\nEl elemento %i es 1/(%i)/1/(%i) ",I,I,I+1);
         }
