@@ -6,7 +6,7 @@ int main() {
     printf("Ingrese un numero entero positivo: ");
     scanf("%d", &N);
 
-    // Parte ascendente
+
     for (I = 1; I <= N; I++) {
         for (J = 1; J <= I; J++) {
             printf("%d ", J);
@@ -14,7 +14,7 @@ int main() {
         printf("\n");
     }
 
-    // Parte descendente
+   
     for (I = N - 1; I >= 1; I--) {
         for (J = 1; J <= I; J++) {
             printf("%d ", J);
