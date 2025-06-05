@@ -3,7 +3,7 @@
 int main()
 {
     int I, N, M = 0, F = 0, SEX;
-    float PESm, ALTm, PESf, ALTf, PROMaf, PROMam, PROMpf, PROMpm, PESmtotal, ALTmtotal, PESftotal, ALTftotal;
+    float ALT, PES, PROMaf, PROMam, PROMpf, PROMpm, PESmtotal, ALTmtotal, PESftotal, ALTftotal;
     printf("Ingrese el numero de personas\n");
     scanf("%i",&N);
     for (I = 1; I <= N; I++)
@@ -13,11 +13,11 @@ int main()
         if (SEX == 1)
         {
             printf("Ingrese el peso del hombre\n");
-            scanf("%f",&PESm);
+            scanf("%f",&PES);
             printf("Ingrese la altura del hombre\n");
-            scanf("%f",&ALTm);
-            PESmtotal += PESm;
-            ALTmtotal += ALTm;
+            scanf("%f",&ALT);
+            PESmtotal += PES;
+            ALTmtotal += ALT;
             M ++;
         }
         else if (SEX == 2)
@@ -26,8 +26,8 @@ int main()
             scanf("%f",&PESf);
             printf("Ingrese la altura de la mujer\n");
             scanf("%f",&ALTf);
-            PESftotal += PESf;
-            ALTftotal += ALTf;
+            PESftotal += PES;
+            ALTftotal += ALT;
             F ++;
         }else printf("\nError con el sexo ingresado ingresados");
     }
