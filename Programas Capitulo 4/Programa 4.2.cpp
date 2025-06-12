@@ -1,19 +1,17 @@
-#include<stdio.h>
+#include <stdio.h>
 
-int cubo(void);
-int i;
+int CUBO(void);
+int I;
 
-void main(void){
-
-int cub;
-for(i = 1; i<=10; i++)
-{
-    cub=cubo();
-    printf("el cubo de %i es igual: %d",i ,cub);
+void main(void) {
+    int CUB;
+    for (I = 1; I <= 10; I++) {
+        CUB = CUBO();
+        printf("El cubo de %i es igual: %d\n", I, CUB);
+    }
 }
-}
-int cubo (void)
-{
-    int i = 2;
-    return(i*i*i);
+
+int CUBO(void) {
+    int I = 2;
+    return (I * I * I);
 }
