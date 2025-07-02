@@ -2,7 +2,7 @@
 
 void main()
 {
-    int ELE[5] = {0};   // Arreglo para contar los votos de 5 candidatos
+    int ELE[5] = {0};   
     int I, VOT;
 
     printf("Ingresa el primer voto (0 - para terminar): ");
