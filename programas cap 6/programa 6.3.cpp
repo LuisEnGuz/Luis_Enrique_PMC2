@@ -14,11 +14,11 @@ int main()
     lectura(UNI, F, C, P);
     funcion1(UNI, F, C, P);
     funcion2(UNI, F, C, P);
-    funcion3(UNI, F, C, P);  // antes ponías 6 fijo; ahora usamos F
+    funcion3(UNI, F, C, P);  
     return 0;
 }
 
-// Lectura de datos
+
 int lectura(int A[][C][P], int FI, int CO, int PR)
 {
     int I, J, K;
@@ -31,7 +31,7 @@ int lectura(int A[][C][P], int FI, int CO, int PR)
     return 0;
 }
 
-// Función 1: Año con mayor ingreso total de alumnos (todas las carreras y semestres)
+
 int funcion1(int A[][C][P], int FI, int CO, int PR)
 {
     int I, J, K, MAY = 0, AO = -1, SUM;
@@ -49,14 +49,14 @@ int funcion1(int A[][C][P], int FI, int CO, int PR)
     return 0;
 }
 
-// Función 2: Carrera con más alumnos en el último año (PR-1)
+
 int funcion2(int A[][C][P], int FI, int CO, int PR)
 {
     int I, J, SUM, MAY = 0, CAR = -1;
     for (I = 0; I < FI; I++) {
         SUM = 0;
         for (J = 0; J < CO; J++)
-            SUM += A[I][J][PR - 1];  // Año más reciente
+            SUM += A[I][J][PR - 1];  
         if (SUM > MAY) {
             MAY = SUM;
             CAR = I;
@@ -66,14 +66,14 @@ int funcion2(int A[][C][P], int FI, int CO, int PR)
     return 0;
 }
 
-// Función 3: Año con mayor ingreso en la última carrera (FI-1)
+
 int funcion3(int A[][C][P], int FI, int CO, int PR)
 {
     int J, K, SUM, MAY = 0, AO = -1;
     for (K = 0; K < PR; K++) {
         SUM = 0;
         for (J = 0; J < CO; J++)
-            SUM += A[FI - 1][J][K];  // Última carrera
+            SUM += A[FI - 1][J][K];  
         if (SUM > MAY) {
             MAY = SUM;
             AO = K;
