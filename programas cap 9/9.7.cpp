@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-// Prototipo de función
+
 int promedio(FILE *);
 
 int main()
