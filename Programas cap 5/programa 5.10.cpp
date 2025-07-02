@@ -47,11 +47,11 @@ int binaria(int a[], int t, int e)
     {
         cen = (izq + der) / 2;
         if (e == a[cen])
-            return cen + 1; // Devuelve posición (1 a n)
+            return cen + 1;
         else if (e > a[cen])
             izq = cen + 1;
         else
             der = cen - 1;
     }
-    return 0; // No encontrado
+    return 0; 
 }
