@@ -27,7 +27,7 @@ int LECTURA(int A[], int T)
     for (I = 0; I < T; I++)
     {
         printf("Ingrese el elemento del arreglo: ");
-        scanf("%i", &A[I]); // Cambié el índice a I para leer correctamente
+        scanf("%i", &A[I]);
     }
     return 0;
 }
