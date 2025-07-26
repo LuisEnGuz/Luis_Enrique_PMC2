@@ -68,17 +68,45 @@ bool caminoLibreRecto(int f1, int c1, int f2, int c2) {
 }
 
 bool amenazaRey(int reyX, int reyY, bool reyEsBlanco) {
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             string pieza = tablero[i][j];
+
             if (pieza == " ") continue;
+
             if ((reyEsBlanco && esNegra(pieza)) || (!reyEsBlanco && esBlanca(pieza))) {
-                if (abs(i - reyX) <= 1 && abs(j - reyY) <= 1)
+                int df = abs(i - reyX);
+                int dc = abs(j - reyY);
+
+ 
+                if (pieza == "♟" && !reyEsBlanco) {
+                    if ((reyX == i + 1) && (reyY == j + 1 || reyY == j - 1)) return true;
+                }
+                if (pieza == "♙" && reyEsBlanco) {
+                    if ((reyX == i - 1) && (reyY == j + 1 || reyY == j - 1)) return true;
+                }
+
+                if ((pieza == "♞" || pieza == "♘") && ((df == 2 && dc == 1) || (df == 1 && dc == 2))) {
                     return true;
+                }
+
+                if ((pieza == "♚" || pieza == "♔") && df <= 1 && dc <= 1) {
+                    return true;
+                }
+
+                if ((pieza == "♝" || pieza == "♗" || pieza == "♛" || pieza == "♕") && df == dc) {
+                    if (caminoLibreDiagonal(i, j, reyX, reyY)) return true;
+                }
+
+                if ((pieza == "♜" || pieza == "♖" || pieza == "♛" || pieza == "♕") && (i == reyX || j == reyY)) {
+                    if (caminoLibreRecto(i, j, reyX, reyY)) return true;
+                }
             }
         }
-    return false;
+    }
+    return false; 
 }
+
 
 bool hayJaque(bool paraBlancas) {
     string rey = paraBlancas ? "♔" : "♚";
