@@ -1,64 +1,66 @@
-#include <iostream>
-#include <string>
-using namespace std;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-struct Alumno {
+#define MAX_NOMBRE 100
+#define NUM_CALIFICACIONES 5
+
+typedef struct {
     int matricula;
-    string nombre;
-    float calificaciones[5];
-};
+    char nombre[MAX_NOMBRE];
+    float calificaciones[NUM_CALIFICACIONES];
+} Alumno;
 
-// Función para leer los datos de un alumno
 void leerAlumno(Alumno* alumno) {
-    cout << "\nIngrese la matrícula del alumno: ";
-    cin >> alumno->matricula;
-    cin.ignore();
+    printf("\nIngrese la matrícula del alumno: ");
+    scanf("%d", &alumno->matricula);
+    getchar();
 
-    cout << "Ingrese el nombre del alumno: ";
-    getline(cin, alumno->nombre);
+    printf("Ingrese el nombre del alumno: ");
+    fgets(alumno->nombre, MAX_NOMBRE, stdin);
+    alumno->nombre[strcspn(alumno->nombre, "\n")] = 0;
 
-    for (int i = 0; i < 5; i++) {
-        cout << "Ingrese calificación " << i + 1 << ": ";
-        cin >> alumno->calificaciones[i];
+    for (int i = 0; i < NUM_CALIFICACIONES; i++) {
+        printf("Ingrese calificación %d: ", i + 1);
+        scanf("%f", &alumno->calificaciones[i]);
     }
-    cin.ignore();
+    getchar();
 }
 
-// Función para mostrar los datos de un alumno
 void mostrarAlumno(const Alumno* alumno) {
-    cout << "\nMatrícula: " << alumno->matricula << endl;
-    cout << "Nombre: " << alumno->nombre << endl;
-    cout << "Calificaciones: ";
-    for (int i = 0; i < 5; i++) {
-        cout << alumno->calificaciones[i] << " ";
+    printf("\nMatrícula: %d\n", alumno->matricula);
+    printf("Nombre: %s\n", alumno->nombre);
+    printf("Calificaciones: ");
+    for (int i = 0; i < NUM_CALIFICACIONES; i++) {
+        printf("%.2f ", alumno->calificaciones[i]);
     }
-    cout << endl;
+    printf("\n");
 }
 
 int main() {
     int cantidad;
 
-    cout << "Ingrese la cantidad de alumnos: ";
-    cin >> cantidad;
-    cin.ignore();
+    printf("Ingrese la cantidad de alumnos: ");
+    scanf("%d", &cantidad);
+    getchar();
 
-    // Reservar memoria dinámica para arreglo de alumnos
-    Alumno* alumnos = new Alumno[cantidad];
-
-    // Leer datos
-    for (int i = 0; i < cantidad; i++) {
-        cout << "\nAlumno " << i + 1 << ":";
-        leerAlumno(&alumnos[i]);  // pasar dirección del alumno
+    Alumno* alumnos = (Alumno*)malloc(cantidad * sizeof(Alumno));
+    if (alumnos == NULL) {
+        printf("Error al reservar memoria.\n");
+        return 1;
     }
 
-    // Mostrar datos
-    cout << "\n--- Lista de alumnos ---\n";
+    for (int i = 0; i < cantidad; i++) {
+        printf("\nAlumno %d:\n", i + 1);
+        leerAlumno(&alumnos[i]);
+    }
+
+    printf("\n--- Lista de alumnos ---\n");
     for (int i = 0; i < cantidad; i++) {
         mostrarAlumno(&alumnos[i]);
     }
 
-    // Liberar memoria
-    delete[] alumnos;
+    free(alumnos);
 
     return 0;
 }
