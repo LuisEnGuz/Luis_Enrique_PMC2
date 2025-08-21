@@ -1,232 +1,174 @@
-#include <iostream>
-#include <string>
-#include <cctype>
-#include <cmath>
-using namespace std;
+#include <stdio.h>
+#include <string.h>
 
-string tablero[8][8];
-bool turnoBlanco = true;
+#define MAX_VEHICULOS 50
+#define COSTO_SEGURO_ANUAL 18000.0
+#define ARCHIVO_VEHICULOS "vehiculos.dat"
 
-void inicializarTablero() {
-    string fila1[8] = {"♜","♞","♝","♛","♚","♝","♞","♜"};
-    string fila2[8] = {"♟","♟","♟","♟","♟","♟","♟","♟"};
-    string fila7[8] = {"♙","♙","♙","♙","♙","♙","♙","♙"};
-    string fila8[8] = {"♖","♘","♗","♕","♔","♗","♘","♖"};
+typedef struct {
+    char placa[20];
+    char marca[20];
+    char modelo[20];
+    char tipoCombustible[10];
+    float kmGalonCarretera;
+    float kmGalonCiudad;
+    float costoGomas;
+    float kmGomas;
+    float costoMantenimiento;
+    float kmMantenimiento;
+    float costoVehiculo;
+    float vidaUtil;
+    float depreciacion;
+    float kmAnualProm;
+} Vehiculo;
 
-    for (int i = 0; i < 8; i++) {
-        tablero[0][i] = fila1[i];
-        tablero[1][i] = fila2[i];
-        tablero[6][i] = fila7[i];
-        tablero[7][i] = fila8[i];
-    }
+Vehiculo vehiculos[MAX_VEHICULOS];
+int totalVehiculos = 0;
 
-    for (int i = 2; i < 6; i++)
-        for (int j = 0; j < 8; j++)
-            tablero[i][j] = " ";
+void guardarVehiculos() {
+    FILE *f = fopen(ARCHIVO_VEHICULOS, "wb");
+    if (!f) return;
+    fwrite(vehiculos, sizeof(Vehiculo), totalVehiculos, f);
+    fclose(f);
 }
 
-void mostrarTablero() {
-    cout << "\n   A B C D E F G H\n";
-    for (int i = 0; i < 8; i++) {
-        cout << 8 - i << "  ";
-        for (int j = 0; j < 8; j++)
-            cout << tablero[i][j] << " ";
-        cout << " " << 8 - i << endl;
-    }
-    cout << "   A B C D E F G H\n";
+void cargarVehiculos() {
+    FILE *f = fopen(ARCHIVO_VEHICULOS, "rb");
+    if (!f) return;
+    totalVehiculos = fread(vehiculos, sizeof(Vehiculo), MAX_VEHICULOS, f);
+    fclose(f);
 }
 
-bool esBlanca(string pieza) {
-    return pieza == "♙" || pieza == "♖" || pieza == "♘" || pieza == "♗" || pieza == "♕" || pieza == "♔";
+void crearVehiculo() {
+    if (totalVehiculos >= MAX_VEHICULOS) return;
+
+    Vehiculo v;
+    printf("Placa: "); scanf("%s", v.placa);
+    printf("Marca: "); scanf("%s", v.marca);
+    printf("Modelo: "); scanf("%s", v.modelo);
+    printf("Tipo Combustible (Gasolina/Gasoil): "); scanf("%s", v.tipoCombustible);
+    printf("Km x galon en carretera: "); scanf("%f", &v.kmGalonCarretera);
+    printf("Km x galon en ciudad: "); scanf("%f", &v.kmGalonCiudad);
+    printf("Costo de gomas: "); scanf("%f", &v.costoGomas);
+    printf("Km de vida de gomas: "); scanf("%f", &v.kmGomas);
+    printf("Costo mantenimiento: "); scanf("%f", &v.costoMantenimiento);
+    printf("Cada cuántos km mantenimiento: "); scanf("%f", &v.kmMantenimiento);
+    printf("Costo vehículo: "); scanf("%f", &v.costoVehiculo);
+    printf("Vida útil (años): "); scanf("%f", &v.vidaUtil);
+    printf("Depreciación anual: "); scanf("%f", &v.depreciacion);
+    printf("Km por año promedio: "); scanf("%f", &v.kmAnualProm);
+
+    vehiculos[totalVehiculos++] = v;
+    guardarVehiculos();
+    printf("Vehículo agregado con éxito.\n");
 }
 
-bool esNegra(string pieza) {
-    return pieza == "♟" || pieza == "♜" || pieza == "♞" || pieza == "♝" || pieza == "♛" || pieza == "♚";
+void listarVehiculos() {
+    if (totalVehiculos == 0) {
+        printf("No hay vehículos registrados.\n");
+        return;
+    }
+    for (int i = 0; i < totalVehiculos; i++)
+        printf("%d - %s %s (%s)\n", i + 1, vehiculos[i].marca, vehiculos[i].modelo, vehiculos[i].placa);
 }
 
-bool caminoLibreDiagonal(int f1, int c1, int f2, int c2) {
-    int df = (f2 > f1) ? 1 : -1;
-    int dc = (c2 > c1) ? 1 : -1;
-    for (int i = f1 + df, j = c1 + dc; i != f2; i += df, j += dc)
-        if (tablero[i][j] != " ") return false;
-    return true;
+void calcularCostoViaje() {
+    if (totalVehiculos == 0) {
+        printf("No hay vehículos registrados.\n");
+        return;
+    }
+
+    listarVehiculos();
+    int seleccion;
+    printf("Seleccione vehículo: "); scanf("%d", &seleccion);
+    seleccion--;
+
+    if (seleccion < 0 || seleccion >= totalVehiculos) {
+        printf("Selección inválida.\n");
+        return;
+    }
+
+    float kmViaje, porcentajeCiudad;
+    printf("Kilómetros del viaje: "); scanf("%f", &kmViaje);
+    printf("Porcentaje de km en ciudad (0-100): "); scanf("%f", &porcentajeCiudad);
+
+    float kmCiudad = kmViaje * (porcentajeCiudad / 100.0);
+    float kmCarretera = kmViaje - kmCiudad;
+
+    Vehiculo v = vehiculos[seleccion];
+
+    float galonesCiudad = kmCiudad / v.kmGalonCiudad;
+    float galonesCarretera = kmCarretera / v.kmGalonCarretera;
+
+    float costoCombustible;
+    if (strcmp(v.tipoCombustible, "Gasolina") == 0)
+        costoCombustible = (galonesCiudad + galonesCarretera) * 290;
+    else
+        costoCombustible = (galonesCiudad + galonesCarretera) * 230;
+
+    float costoGomas = (kmViaje / v.kmGomas) * v.costoGomas;
+    float costoMantenimiento = (kmViaje / v.kmMantenimiento) * v.costoMantenimiento;
+    float costoSeguro = (COSTO_SEGURO_ANUAL / (v.kmAnualProm * v.vidaUtil)) * kmViaje;
+    float costoDepreciacion = (v.depreciacion / (v.kmAnualProm * v.vidaUtil)) * kmViaje;
+
+    float costoTotal = costoGomas + costoMantenimiento + costoCombustible + costoSeguro + costoDepreciacion;
+
+    printf("\n--- Desglose de costos ---\n");
+    printf("Costo Gomas: %.2f RD$\n", costoGomas);
+    printf("Costo Mantenimiento: %.2f RD$\n", costoMantenimiento);
+    printf("Costo Combustible: %.2f RD$\n", costoCombustible);
+    printf("Costo Seguro (%.2f RD$/año): %.2f RD$\n", COSTO_SEGURO_ANUAL, costoSeguro);
+    printf("Costo Depreciación: %.2f RD$\n", costoDepreciacion);
+    printf("Costo total viaje: %.2f RD$\n", costoTotal);
+    printf("Costo por km: %.2f RD$/km\n", costoTotal / kmViaje);
 }
 
-bool caminoLibreRecto(int f1, int c1, int f2, int c2) {
-    if (f1 == f2) {
-        int dir = (c2 > c1) ? 1 : -1;
-        for (int j = c1 + dir; j != c2; j += dir)
-            if (tablero[f1][j] != " ") return false;
-        return true;
-    } else if (c1 == c2) {
-        int dir = (f2 > f1) ? 1 : -1;
-        for (int i = f1 + dir; i != f2; i += dir)
-            if (tablero[i][c1] != " ") return false;
-        return true;
-    }
-    return false;
-}
-
-bool amenazaRey(int reyX, int reyY, bool reyEsBlanco) {
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            string pieza = tablero[i][j];
-
-            if (pieza == " ") continue;
-
-            if ((reyEsBlanco && esNegra(pieza)) || (!reyEsBlanco && esBlanca(pieza))) {
-                int df = abs(i - reyX);
-                int dc = abs(j - reyY);
-
- 
-                if (pieza == "♟" && !reyEsBlanco) {
-                    if ((reyX == i + 1) && (reyY == j + 1 || reyY == j - 1)) return true;
-                }
-                if (pieza == "♙" && reyEsBlanco) {
-                    if ((reyX == i - 1) && (reyY == j + 1 || reyY == j - 1)) return true;
-                }
-
-                if ((pieza == "♞" || pieza == "♘") && ((df == 2 && dc == 1) || (df == 1 && dc == 2))) {
-                    return true;
-                }
-
-                if ((pieza == "♚" || pieza == "♔") && df <= 1 && dc <= 1) {
-                    return true;
-                }
-
-                if ((pieza == "♝" || pieza == "♗" || pieza == "♛" || pieza == "♕") && df == dc) {
-                    if (caminoLibreDiagonal(i, j, reyX, reyY)) return true;
-                }
-
-                if ((pieza == "♜" || pieza == "♖" || pieza == "♛" || pieza == "♕") && (i == reyX || j == reyY)) {
-                    if (caminoLibreRecto(i, j, reyX, reyY)) return true;
-                }
-            }
-        }
-    }
-    return false; 
-}
-
-
-bool hayJaque(bool paraBlancas) {
-    string rey = paraBlancas ? "♔" : "♚";
-    for (int i = 0; i < 8; i++)
-        for (int j = 0; j < 8; j++)
-            if (tablero[i][j] == rey)
-                return amenazaRey(i, j, paraBlancas);
-    return false;
-}
-
-bool movimientoValido(string pieza, int fO, int cO, int fD, int cD) {
-    int dx = cD - cO;
-    int dy = fD - fO;
-    string destino = tablero[fD][cD];
-
-    if (esBlanca(pieza) && esBlanca(destino)) return false;
-    if (esNegra(pieza) && esNegra(destino)) return false;
-
-    if (pieza == "♙") { // Peón blanco
-        if (dx == 0 && dy == -1 && destino == " ") return true;
-        if (dx == 0 && dy == -2 && fO == 6 && tablero[fO - 1][cO] == " " && destino == " ") return true;
-        if (abs(dx) == 1 && dy == -1 && esNegra(destino)) return true;
-        return false;
+void borrarVehiculo() {
+    if (totalVehiculos == 0) {
+        printf("No hay vehículos registrados.\n");
+        return;
     }
 
-    if (pieza == "♟") { // Peón negro
-        if (dx == 0 && dy == 1 && destino == " ") return true;
-        if (dx == 0 && dy == 2 && fO == 1 && tablero[fO + 1][cO] == " " && destino == " ") return true;
-        if (abs(dx) == 1 && dy == 1 && esBlanca(destino)) return true;
-        return false;
+    listarVehiculos();
+    int seleccion;
+    printf("Seleccione el número del vehículo a borrar: "); scanf("%d", &seleccion);
+    seleccion--;
+
+    if (seleccion < 0 || seleccion >= totalVehiculos) {
+        printf("Selección inválida.\n");
+        return;
     }
 
-    if (pieza == "♖" || pieza == "♜") // Torre
-        return (fO == fD || cO == cD) && caminoLibreRecto(fO, cO, fD, cD);
+    for (int i = seleccion; i < totalVehiculos - 1; i++)
+        vehiculos[i] = vehiculos[i + 1];
 
-    if (pieza == "♘" || pieza == "♞") // Caballo
-        return (abs(dx) == 2 && abs(dy) == 1) || (abs(dx) == 1 && abs(dy) == 2);
-
-    if (pieza == "♗" || pieza == "♝") // Alfil
-        return abs(dx) == abs(dy) && caminoLibreDiagonal(fO, cO, fD, cD);
-
-    if (pieza == "♕" || pieza == "♛") // Reina
-        return (abs(dx) == abs(dy) && caminoLibreDiagonal(fO, cO, fD, cD)) ||
-               ((fO == fD || cO == cD) && caminoLibreRecto(fO, cO, fD, cD));
-
-    if (pieza == "♔" || pieza == "♚") // Rey
-        return abs(dx) <= 1 && abs(dy) <= 1;
-
-    return false;
-}
-
-bool moverPieza(string origen, string destino) {
-    int fO = 8 - (origen[1] - '0');
-    int cO = toupper(origen[0]) - 'A';
-    int fD = 8 - (destino[1] - '0');
-    int cD = toupper(destino[0]) - 'A';
-
-    if (fO < 0 || fO > 7 || cO < 0 || cO > 7 || fD < 0 || fD > 7 || cD < 0 || cD > 7) {
-        cout << "❌ Coordenadas inválidas.\n";
-        return false;
-    }
-
-    string pieza = tablero[fO][cO];
-    if (pieza == " ") {
-        cout << "❌ No hay pieza en la casilla de origen.\n";
-        return false;
-    }
-
-    if ((turnoBlanco && !esBlanca(pieza)) || (!turnoBlanco && !esNegra(pieza))) {
-        cout << "❌ No es tu turno.\n";
-        return false;
-    }
-
-    if (!movimientoValido(pieza, fO, cO, fD, cD)) {
-        cout << "❌ Movimiento inválido para la pieza.\n";
-        return false;
-    }
-
-    string backup = tablero[fD][cD];
-    tablero[fD][cD] = pieza;
-    tablero[fO][cO] = " ";
-
-    if (hayJaque(turnoBlanco)) {
-        cout << "❌ Movimiento deja a tu rey en jaque.\n";
-        tablero[fO][cO] = pieza;
-        tablero[fD][cD] = backup;
-        return false;
-    }
-
-    return true;
-}
-
-void turno() {
-    string origen, destino;
-    mostrarTablero();
-    cout << (turnoBlanco ? "♙ Turno de Blancas" : "♟ Turno de Negras") << "\n";
-    cout << "Mover (ejemplo: E2 E4): ";
-    cin >> origen >> destino;
-
-    if (moverPieza(origen, destino))
-        turnoBlanco = !turnoBlanco;
+    totalVehiculos--;
+    guardarVehiculos();
+    printf("Vehículo eliminado con éxito.\n");
 }
 
 int main() {
-    inicializarTablero();
+    cargarVehiculos();
+    int opcion;
+    do {
+        printf("\n--- Gestión de Gastos de Vehículo ---\n");
+        printf("1. Crear vehículo\n");
+        printf("2. Listar vehículos\n");
+        printf("3. Calcular costo de viaje\n");
+        printf("4. Borrar vehículo\n");
+        printf("0. Salir\n");
+        printf("Seleccione: ");
+        scanf("%d", &opcion);
 
-    while (true) {
-        if (hayJaque(turnoBlanco)) {
-            cout << "\n⚠ ¡" << (turnoBlanco ? "Blanco" : "Negro") << " está en jaque!\n";
-            cout << "¿Continuar moviendo? (s/n): ";
-            char seguir;
-            cin >> seguir;
-            if (seguir == 'n' || seguir == 'N') {
-                cout << "✅ Fin de la partida.\n";
-                break;
-            }
+        switch (opcion) {
+            case 1: crearVehiculo(); break;
+            case 2: listarVehiculos(); break;
+            case 3: calcularCostoViaje(); break;
+            case 4: borrarVehiculo(); break;
+            case 0: printf("Saliendo...\n"); break;
+            default: printf("Opción inválida.\n");
         }
-
-        turno();
-    }
+    } while (opcion != 0);
 
     return 0;
 }
