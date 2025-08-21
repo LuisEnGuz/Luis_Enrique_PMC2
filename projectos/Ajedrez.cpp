@@ -1,174 +1,189 @@
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
 
-#define MAX_VEHICULOS 50
-#define COSTO_SEGURO_ANUAL 18000.0
-#define ARCHIVO_VEHICULOS "vehiculos.dat"
+char tablero[8][8][4]; // Guardar piezas como cadenas pequeñas
+int turnoBlanco = 1; // 1 = blanco, 0 = negro
 
-typedef struct {
-    char placa[20];
-    char marca[20];
-    char modelo[20];
-    char tipoCombustible[10];
-    float kmGalonCarretera;
-    float kmGalonCiudad;
-    float costoGomas;
-    float kmGomas;
-    float costoMantenimiento;
-    float kmMantenimiento;
-    float costoVehiculo;
-    float vidaUtil;
-    float depreciacion;
-    float kmAnualProm;
-} Vehiculo;
-
-Vehiculo vehiculos[MAX_VEHICULOS];
-int totalVehiculos = 0;
-
-void guardarVehiculos() {
-    FILE *f = fopen(ARCHIVO_VEHICULOS, "wb");
-    if (!f) return;
-    fwrite(vehiculos, sizeof(Vehiculo), totalVehiculos, f);
-    fclose(f);
-}
-
-void cargarVehiculos() {
-    FILE *f = fopen(ARCHIVO_VEHICULOS, "rb");
-    if (!f) return;
-    totalVehiculos = fread(vehiculos, sizeof(Vehiculo), MAX_VEHICULOS, f);
-    fclose(f);
-}
-
-void crearVehiculo() {
-    if (totalVehiculos >= MAX_VEHICULOS) return;
-
-    Vehiculo v;
-    printf("Placa: "); scanf("%s", v.placa);
-    printf("Marca: "); scanf("%s", v.marca);
-    printf("Modelo: "); scanf("%s", v.modelo);
-    printf("Tipo Combustible (Gasolina/Gasoil): "); scanf("%s", v.tipoCombustible);
-    printf("Km x galon en carretera: "); scanf("%f", &v.kmGalonCarretera);
-    printf("Km x galon en ciudad: "); scanf("%f", &v.kmGalonCiudad);
-    printf("Costo de gomas: "); scanf("%f", &v.costoGomas);
-    printf("Km de vida de gomas: "); scanf("%f", &v.kmGomas);
-    printf("Costo mantenimiento: "); scanf("%f", &v.costoMantenimiento);
-    printf("Cada cuántos km mantenimiento: "); scanf("%f", &v.kmMantenimiento);
-    printf("Costo vehículo: "); scanf("%f", &v.costoVehiculo);
-    printf("Vida útil (años): "); scanf("%f", &v.vidaUtil);
-    printf("Depreciación anual: "); scanf("%f", &v.depreciacion);
-    printf("Km por año promedio: "); scanf("%f", &v.kmAnualProm);
-
-    vehiculos[totalVehiculos++] = v;
-    guardarVehiculos();
-    printf("Vehículo agregado con éxito.\n");
-}
-
-void listarVehiculos() {
-    if (totalVehiculos == 0) {
-        printf("No hay vehículos registrados.\n");
-        return;
+void inicializarTablero() {
+    char fila1[8][4] = {"♜","♞","♝","♛","♚","♝","♞","♜"};
+    char fila2[8][4] = {"♟","♟","♟","♟","♟","♟","♟","♟"};
+    char fila7[8][4] = {"♙","♙","♙","♙","♙","♙","♙","♙"};
+    char fila8[8][4] = {"♖","♘","♗","♕","♔","♗","♘","♖"};
+    for (int i=0;i<8;i++){
+        strcpy(tablero[0][i], fila1[i]);
+        strcpy(tablero[1][i], fila2[i]);
+        strcpy(tablero[6][i], fila7[i]);
+        strcpy(tablero[7][i], fila8[i]);
     }
-    for (int i = 0; i < totalVehiculos; i++)
-        printf("%d - %s %s (%s)\n", i + 1, vehiculos[i].marca, vehiculos[i].modelo, vehiculos[i].placa);
+    for(int i=2;i<6;i++)
+        for(int j=0;j<8;j++)
+            strcpy(tablero[i][j], " ");
 }
 
-void calcularCostoViaje() {
-    if (totalVehiculos == 0) {
-        printf("No hay vehículos registrados.\n");
-        return;
+void mostrarTablero() {
+    printf("\n   A B C D E F G H\n");
+    for(int i=0;i<8;i++){
+        printf("%d  ",8-i);
+        for(int j=0;j<8;j++)
+            printf("%s ", tablero[i][j]);
+        printf(" %d\n", 8-i);
     }
-
-    listarVehiculos();
-    int seleccion;
-    printf("Seleccione vehículo: "); scanf("%d", &seleccion);
-    seleccion--;
-
-    if (seleccion < 0 || seleccion >= totalVehiculos) {
-        printf("Selección inválida.\n");
-        return;
-    }
-
-    float kmViaje, porcentajeCiudad;
-    printf("Kilómetros del viaje: "); scanf("%f", &kmViaje);
-    printf("Porcentaje de km en ciudad (0-100): "); scanf("%f", &porcentajeCiudad);
-
-    float kmCiudad = kmViaje * (porcentajeCiudad / 100.0);
-    float kmCarretera = kmViaje - kmCiudad;
-
-    Vehiculo v = vehiculos[seleccion];
-
-    float galonesCiudad = kmCiudad / v.kmGalonCiudad;
-    float galonesCarretera = kmCarretera / v.kmGalonCarretera;
-
-    float costoCombustible;
-    if (strcmp(v.tipoCombustible, "Gasolina") == 0)
-        costoCombustible = (galonesCiudad + galonesCarretera) * 290;
-    else
-        costoCombustible = (galonesCiudad + galonesCarretera) * 230;
-
-    float costoGomas = (kmViaje / v.kmGomas) * v.costoGomas;
-    float costoMantenimiento = (kmViaje / v.kmMantenimiento) * v.costoMantenimiento;
-    float costoSeguro = (COSTO_SEGURO_ANUAL / (v.kmAnualProm * v.vidaUtil)) * kmViaje;
-    float costoDepreciacion = (v.depreciacion / (v.kmAnualProm * v.vidaUtil)) * kmViaje;
-
-    float costoTotal = costoGomas + costoMantenimiento + costoCombustible + costoSeguro + costoDepreciacion;
-
-    printf("\n--- Desglose de costos ---\n");
-    printf("Costo Gomas: %.2f RD$\n", costoGomas);
-    printf("Costo Mantenimiento: %.2f RD$\n", costoMantenimiento);
-    printf("Costo Combustible: %.2f RD$\n", costoCombustible);
-    printf("Costo Seguro (%.2f RD$/año): %.2f RD$\n", COSTO_SEGURO_ANUAL, costoSeguro);
-    printf("Costo Depreciación: %.2f RD$\n", costoDepreciacion);
-    printf("Costo total viaje: %.2f RD$\n", costoTotal);
-    printf("Costo por km: %.2f RD$/km\n", costoTotal / kmViaje);
+    printf("   A B C D E F G H\n");
 }
 
-void borrarVehiculo() {
-    if (totalVehiculos == 0) {
-        printf("No hay vehículos registrados.\n");
-        return;
-    }
-
-    listarVehiculos();
-    int seleccion;
-    printf("Seleccione el número del vehículo a borrar: "); scanf("%d", &seleccion);
-    seleccion--;
-
-    if (seleccion < 0 || seleccion >= totalVehiculos) {
-        printf("Selección inválida.\n");
-        return;
-    }
-
-    for (int i = seleccion; i < totalVehiculos - 1; i++)
-        vehiculos[i] = vehiculos[i + 1];
-
-    totalVehiculos--;
-    guardarVehiculos();
-    printf("Vehículo eliminado con éxito.\n");
+int esBlanca(char *pieza) {
+    return !strcmp(pieza,"♙") || !strcmp(pieza,"♖") || !strcmp(pieza,"♘") ||
+           !strcmp(pieza,"♗") || !strcmp(pieza,"♕") || !strcmp(pieza,"♔");
 }
 
-int main() {
-    cargarVehiculos();
-    int opcion;
-    do {
-        printf("\n--- Gestión de Gastos de Vehículo ---\n");
-        printf("1. Crear vehículo\n");
-        printf("2. Listar vehículos\n");
-        printf("3. Calcular costo de viaje\n");
-        printf("4. Borrar vehículo\n");
-        printf("0. Salir\n");
-        printf("Seleccione: ");
-        scanf("%d", &opcion);
+int esNegra(char *pieza) {
+    return !strcmp(pieza,"♟") || !strcmp(pieza,"♜") || !strcmp(pieza,"♞") ||
+           !strcmp(pieza,"♝") || !strcmp(pieza,"♛") || !strcmp(pieza,"♚");
+}
 
-        switch (opcion) {
-            case 1: crearVehiculo(); break;
-            case 2: listarVehiculos(); break;
-            case 3: calcularCostoViaje(); break;
-            case 4: borrarVehiculo(); break;
-            case 0: printf("Saliendo...\n"); break;
-            default: printf("Opción inválida.\n");
+int caminoLibreDiagonal(int f1,int c1,int f2,int c2){
+    int df = (f2>f1)?1:-1;
+    int dc = (c2>c1)?1:-1;
+    int i,j;
+    for(i=f1+df,j=c1+dc; i!=f2; i+=df,j+=dc)
+        if(strcmp(tablero[i][j]," ")!=0) return 0;
+    return 1;
+}
+
+int caminoLibreRecto(int f1,int c1,int f2,int c2){
+    int i,j;
+    if(f1==f2){
+        int dir = (c2>c1)?1:-1;
+        for(j=c1+dir;j!=c2;j+=dir)
+            if(strcmp(tablero[f1][j]," ")!=0) return 0;
+        return 1;
+    } else if(c1==c2){
+        int dir = (f2>f1)?1:-1;
+        for(i=f1+dir;i!=f2;i+=dir)
+            if(strcmp(tablero[i][c1]," ")!=0) return 0;
+        return 1;
+    }
+    return 0;
+}
+
+int amenazaRey(int reyX,int reyY,int reyEsBlanco){
+    int i,j;
+    for(i=0;i<8;i++){
+        for(j=0;j<8;j++){
+            char *pieza = tablero[i][j];
+            if(strcmp(pieza," ")==0) continue;
+            if((reyEsBlanco && esNegra(pieza)) || (!reyEsBlanco && esBlanca(pieza))){
+                if(abs(i-reyX)<=1 && abs(j-reyY)<=1) return 1;
+            }
         }
-    } while (opcion != 0);
+    }
+    return 0;
+}
 
+int hayJaque(int paraBlancas){
+    int i,j;
+    char *rey = paraBlancas?"♔":"♚";
+    for(i=0;i<8;i++)
+        for(j=0;j<8;j++)
+            if(strcmp(tablero[i][j],rey)==0)
+                return amenazaRey(i,j,paraBlancas);
+    return 0;
+}
+
+int movimientoValido(char *pieza,int fO,int cO,int fD,int cD){
+    int dx = cD-cO;
+    int dy = fD-fO;
+    char *destino = tablero[fD][cD];
+    if(esBlanca(pieza) && esBlanca(destino)) return 0;
+    if(esNegra(pieza) && esNegra(destino)) return 0;
+
+    if(!strcmp(pieza,"♙")){
+        if(dx==0 && dy==-1 && !strcmp(destino," ")) return 1;
+        if(dx==0 && dy==-2 && fO==6 && !strcmp(tablero[fO-1][cO]," ") && !strcmp(destino," ")) return 1;
+        if(abs(dx)==1 && dy==-1 && esNegra(destino)) return 1;
+        return 0;
+    }
+    if(!strcmp(pieza,"♟")){
+        if(dx==0 && dy==1 && !strcmp(destino," ")) return 1;
+        if(dx==0 && dy==2 && fO==1 && !strcmp(tablero[fO+1][cO]," ") && !strcmp(destino," ")) return 1;
+        if(abs(dx)==1 && dy==1 && esBlanca(destino)) return 1;
+        return 0;
+    }
+    if(!strcmp(pieza,"♖") || !strcmp(pieza,"♜"))
+        return (fO==fD || cO==cD) && caminoLibreRecto(fO,cO,fD,cD);
+    if(!strcmp(pieza,"♘") || !strcmp(pieza,"♞"))
+        return (abs(dx)==2 && abs(dy)==1) || (abs(dx)==1 && abs(dy)==2);
+    if(!strcmp(pieza,"♗") || !strcmp(pieza,"♝"))
+        return abs(dx)==abs(dy) && caminoLibreDiagonal(fO,cO,fD,cD);
+    if(!strcmp(pieza,"♕") || !strcmp(pieza,"♛"))
+        return (abs(dx)==abs(dy) && caminoLibreDiagonal(fO,cO,fD,cD)) || 
+               ((fO==fD || cO==cD) && caminoLibreRecto(fO,cO,fD,cD));
+    if(!strcmp(pieza,"♔") || !strcmp(pieza,"♚"))
+        return abs(dx)<=1 && abs(dy)<=1;
+
+    return 0;
+}
+
+int moverPieza(char *origen,char *destino){
+    int fO = 8 - (origen[1]-'0');
+    int cO = toupper(origen[0])-'A';
+    int fD = 8 - (destino[1]-'0');
+    int cD = toupper(destino[0])-'A';
+    if(fO<0||fO>7||cO<0||cO>7||fD<0||fD>7||cD<0||cD>7){
+        printf("❌ Coordenadas inválidas.\n");
+        return 0;
+    }
+    char backup[4];
+    char *pieza = tablero[fO][cO];
+    if(strcmp(pieza," ")==0){
+        printf("❌ No hay pieza en la casilla de origen.\n");
+        return 0;
+    }
+    if((turnoBlanco && !esBlanca(pieza)) || (!turnoBlanco && !esNegra(pieza))){
+        printf("❌ No es tu turno.\n");
+        return 0;
+    }
+    if(!movimientoValido(pieza,fO,cO,fD,cD)){
+        printf("❌ Movimiento inválido para la pieza.\n");
+        return 0;
+    }
+    strcpy(backup, tablero[fD][cD]);
+    strcpy(tablero[fD][cD], pieza);
+    strcpy(tablero[fO][cO], " ");
+    if(hayJaque(turnoBlanco)){
+        printf("❌ Movimiento deja a tu rey en jaque.\n");
+        strcpy(tablero[fO][cO], pieza);
+        strcpy(tablero[fD][cD], backup);
+        return 0;
+    }
+    return 1;
+}
+
+void turno(){
+    char origen[3], destino[3];
+    mostrarTablero();
+    printf("%s Turno de %s\n", turnoBlanco?"♙":"♟", turnoBlanco?"Blancas":"Negras");
+    printf("Mover (ejemplo: E2 E4): ");
+    scanf("%2s %2s", origen, destino);
+    if(moverPieza(origen,destino)) turnoBlanco = !turnoBlanco;
+}
+
+int main(){
+    inicializarTablero();
+    while(1){
+        if(hayJaque(turnoBlanco)){
+            printf("\n⚠ ¡%s está en jaque!\n", turnoBlanco?"Blanco":"Negro");
+            printf("¿Continuar moviendo? (s/n): ");
+            char seguir;
+            scanf(" %c",&seguir);
+            if(seguir=='n' || seguir=='N'){
+                printf("✅ Fin de la partida.\n");
+                break;
+            }
+        }
+        turno();
+    }
     return 0;
 }
