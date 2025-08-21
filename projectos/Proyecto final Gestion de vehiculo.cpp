@@ -2,7 +2,7 @@
 #include <string.h>
 
 #define MAX_VEHICULOS 50
-#define COSTO_SEGURO_ANUAL 18000.0  // RD$ por 12 meses
+#define COSTO_SEGURO_ANUAL 18000.0  
 
 typedef struct {
     char placa[20];
@@ -128,6 +128,31 @@ void calcularCostoViaje() {
     printf("Costo por km: %.2f RD$/km\n", costoTotal / kmViaje);
 }
 
+void borrarVehiculo() {
+    if (totalVehiculos == 0) {
+        printf("No hay vehículos registrados.\n");
+        return;
+    }
+
+    listarVehiculos();
+    int seleccion;
+    printf("Seleccione el número del vehículo a borrar: ");
+    scanf("%d", &seleccion);
+    seleccion--;
+
+    if (seleccion < 0 || seleccion >= totalVehiculos) {
+        printf("Selección inválida.\n");
+        return;
+    }
+
+    for (int i = seleccion; i < totalVehiculos - 1; i++) {
+        vehiculos[i] = vehiculos[i + 1];
+    }
+
+    totalVehiculos--;
+    printf("Vehículo eliminado con éxito.\n");
+}
+
 int main() {
     int opcion;
     do {
@@ -135,6 +160,7 @@ int main() {
         printf("1. Crear vehículo\n");
         printf("2. Listar vehículos\n");
         printf("3. Calcular costo de viaje\n");
+        printf("4. Borrar vehículo\n");
         printf("0. Salir\n");
         printf("Seleccione: ");
         scanf("%d", &opcion);
@@ -143,6 +169,7 @@ int main() {
             case 1: crearVehiculo(); break;
             case 2: listarVehiculos(); break;
             case 3: calcularCostoViaje(); break;
+            case 4: borrarVehiculo(); break;
             case 0: printf("Saliendo...\n"); break;
             default: printf("Opción inválida.\n");
         }
