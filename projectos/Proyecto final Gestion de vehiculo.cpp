@@ -3,6 +3,7 @@
 
 #define MAX_VEHICULOS 50
 #define COSTO_SEGURO_ANUAL 18000.0  
+#define ARCHIVO "vehiculos.dat"
 
 typedef struct {
     char placa[20];
@@ -24,6 +25,27 @@ typedef struct {
 Vehiculo vehiculos[MAX_VEHICULOS];
 int totalVehiculos = 0;
 
+//cambios para que guarde y cargue el archivo
+void guardarEnArchivo() {
+    FILE *f = fopen(ARCHIVO, "wb");
+    if (!f) {
+        printf("Error al guardar archivo.\n");
+        return;
+    }
+    fwrite(&totalVehiculos, sizeof(int), 1, f);
+    fwrite(vehiculos, sizeof(Vehiculo), totalVehiculos, f);
+    fclose(f);
+}
+
+void cargarDesdeArchivo() {
+    FILE *f = fopen(ARCHIVO, "rb");
+    if (!f) return;  
+    fread(&totalVehiculos, sizeof(int), 1, f);
+    fread(vehiculos, sizeof(Vehiculo), totalVehiculos, f);
+    fclose(f);
+}
+
+
 void crearVehiculo() {
     if (totalVehiculos >= MAX_VEHICULOS) {
         printf("No se pueden agregar más vehículos.\n");
@@ -31,37 +53,24 @@ void crearVehiculo() {
     }
 
     Vehiculo v;
-    printf("Placa: ");
-    scanf("%s", v.placa);
-    printf("Marca: ");
-    scanf("%s", v.marca);
-    printf("Modelo: ");
-    scanf("%s", v.modelo);
-    printf("Tipo Combustible (Gasolina/Gasoil): ");
-    scanf("%s", v.tipoCombustible);
-    printf("Km x galon en carretera: ");
-    scanf("%f", &v.kmGalonCarretera);
-    printf("Km x galon en ciudad: ");
-    scanf("%f", &v.kmGalonCiudad);
-    printf("Costo de gomas: ");
-    scanf("%f", &v.costoGomas);
-    printf("Km de vida de gomas: ");
-    scanf("%f", &v.kmGomas);
-    printf("Costo mantenimiento: ");
-    scanf("%f", &v.costoMantenimiento);
-    printf("Cada cuántos km mantenimiento: ");
-    scanf("%f", &v.kmMantenimiento);
-    printf("Costo vehículo: ");
-    scanf("%f", &v.costoVehiculo);
-    printf("Vida útil (años): ");
-    scanf("%f", &v.vidaUtil);
-    printf("Depreciación anual: ");
-    scanf("%f", &v.depreciacion);
-    printf("Km por año promedio: ");
-    scanf("%f", &v.kmAnualProm);
+    printf("Placa: "); scanf("%s", v.placa);
+    printf("Marca: "); scanf("%s", v.marca);
+    printf("Modelo: "); scanf("%s", v.modelo);
+    printf("Tipo Combustible (Gasolina/Gasoil): "); scanf("%s", v.tipoCombustible);
+    printf("Km x galon en carretera: "); scanf("%f", &v.kmGalonCarretera);
+    printf("Km x galon en ciudad: "); scanf("%f", &v.kmGalonCiudad);
+    printf("Costo de gomas: "); scanf("%f", &v.costoGomas);
+    printf("Km de vida de gomas: "); scanf("%f", &v.kmGomas);
+    printf("Costo mantenimiento: "); scanf("%f", &v.costoMantenimiento);
+    printf("Cada cuántos km mantenimiento: "); scanf("%f", &v.kmMantenimiento);
+    printf("Costo vehículo: "); scanf("%f", &v.costoVehiculo);
+    printf("Vida útil (años): "); scanf("%f", &v.vidaUtil);
+    printf("Depreciación anual: "); scanf("%f", &v.depreciacion);
+    printf("Km por año promedio: "); scanf("%f", &v.kmAnualProm);
 
     vehiculos[totalVehiculos++] = v;
-    printf("Vehículo agregado con éxito.\n");
+    guardarEnArchivo();
+    printf("Vehículo agregado y guardado con éxito.\n");
 }
 
 void listarVehiculos() {
@@ -150,10 +159,13 @@ void borrarVehiculo() {
     }
 
     totalVehiculos--;
-    printf("Vehículo eliminado con éxito.\n");
+    guardarEnArchivo();
+    printf("Vehículo eliminado y archivo actualizado con éxito.\n");
 }
 
 int main() {
+    cargarDesdeArchivo();
+
     int opcion;
     do {
         printf("\n--- Gestión de Gastos de Vehículo ---\n");
